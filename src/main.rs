@@ -48,42 +48,14 @@ fn main() {
     println!("Time elapsed is: {:?}", duration);
 }
 
-/*
-const N: usize = 50000000;
-
-fn bench() {
-    let mut arr = [0usize; N];
-    let mut vec = vec![0usize; N];
-
-    let now = Instant::now();
-    for i in 0..N {
-        arr[i] = i;
-    }
-    println!("Finished arr in: {}", now.elapsed().as_millis());
-
-    let now = Instant::now();
-    for i in 0..N {
-        vec[i] = i;
-    }
-    println!("Finished vec in: {}", now.elapsed().as_millis());
-
-    let now = Instant::now();
-    for (i, elem) in vec.iter_mut().enumerate() {
-        *elem = i;
-    }
-    println!("Finished vec iter in: {}", now.elapsed().as_millis());
-}
-
-*/
-
 fn show_matrix(matrix: &[Vec<f64>], num_rows: usize, decimals: usize, indices: bool) {
     let len = matrix.len().to_string().len();
-    for i in 0..num_rows {
+    for (i, item) in matrix.iter().enumerate().take(num_rows) {
         if indices {
             print!("[{:>len$}]  ", i.to_string());
         }
-        for j in 0..matrix[i].len() {
-            let v: f64 = matrix[i][j];
+        for itm in item.iter() {
+            let v: f64 = *itm;
             if v >= 0.0 {
                 print!(" "); // '+'
             }
@@ -119,8 +91,8 @@ fn make_data(num_items: usize) -> Vec<Vec<f64>> {
     let nw = dn.num_weights(NUM_INPUT, NUM_OUTPUT);
     let mut wts: Vec<f64> = vec![0.0; nw];
 
-    for i in 0..nw {
-        wts[i] = (wt_hi - wt_lo) * rrnd.gen::<f64>() + wt_lo;
+    for item in wts.iter_mut().take(nw) {
+        *item = (wt_hi - wt_lo) * rrnd.gen::<f64>() + wt_lo;
     }
     dn.set_weights(&wts);
 
@@ -129,11 +101,11 @@ fn make_data(num_items: usize) -> Vec<Vec<f64>> {
     let in_lo = -4.0; // pseudo-Gaussian scaling
     let in_hi = 4.0;
 
-    for r in 0..num_items {
+    for item in result.iter_mut().take(num_items) {
         let mut inputs: Vec<f64> = vec![0.0; NUM_INPUT]; // random input values
 
-        for i in 0..NUM_INPUT {
-            inputs[i] = (in_hi - in_lo) * rrnd.gen::<f64>() + in_lo;
+        for itm2 in inputs.iter_mut().take(NUM_INPUT) {
+            *itm2 = (in_hi - in_lo) * rrnd.gen::<f64>() + in_lo;
         }
 
         //ShowVector(inputs, 2);
@@ -147,12 +119,12 @@ fn make_data(num_items: usize) -> Vec<Vec<f64>> {
         let outputs = probs_to_classes(&probs); // convert to outputs like [0, 0, 1, 0]
 
         let mut c = 0;
-        for i in 0..NUM_INPUT {
-            result[r][c] = inputs[i];
+        for itm2 in inputs.iter().take(NUM_INPUT) {
+            item[c] = *itm2;
             c += 1;
         }
-        for i in 0..NUM_OUTPUT {
-            result[r][c] = outputs[i];
+        for itm3 in outputs.iter().take(NUM_OUTPUT) {
+            item[c] = *itm3;
             c += 1;
         }
         //Console.WriteLine("");
@@ -161,7 +133,7 @@ fn make_data(num_items: usize) -> Vec<Vec<f64>> {
     result
 }
 
-fn probs_to_classes(probs: &Vec<f64>) -> Vec<f64> {
+fn probs_to_classes(probs: &[f64]) -> Vec<f64> {
     let mut result: Vec<f64> = vec![0.0; probs.len()];
     let idx: usize = max_index(probs);
     result[idx] = 1.0;
@@ -172,9 +144,9 @@ fn max_index(probs: &[f64]) -> usize {
     let mut max_idx = 0;
     let mut max_val = probs[0];
 
-    for i in 0..probs.len() {
-        if probs[i] > max_val {
-            max_val = probs[i];
+    for (i, item) in probs.iter().enumerate() {
+        if *item > max_val {
+            max_val = *item;
             max_idx = i;
         }
     }
@@ -227,8 +199,8 @@ impl DeepNet {
         let num_wts = dn.num_weights(n_input, n_output);
         let mut wts: Vec<f64> = vec![0.0; num_wts];
 
-        for i in 0..num_wts {
-            wts[i] = (hi - lo) * dn.rnd.gen::<f64>() + lo;
+        for item in wts.iter_mut().take(num_wts) {
+            *item = (hi - lo) * dn.rnd.gen::<f64>() + lo;
         }
         dn.set_weights(&wts);
         dn
@@ -253,8 +225,7 @@ impl DeepNet {
         }
         let obs = n_output;
 
-        let nw = ih_wts + hh_wts + ho_wts + hbs + obs;
-        return nw;
+        ih_wts + hh_wts + ho_wts + hbs + obs        
     }
 
     fn get_weights(&mut self) -> Vec<f64> {
@@ -305,10 +276,10 @@ impl DeepNet {
             ptr += 1;
         }
 
-        return result;
+        result
     }
 
-    fn set_weights(&mut self, wts: &Vec<f64>) {
+    fn set_weights(&mut self, wts: &[f64]) {
         // order: ihweights - hhWeights[] - hoWeights - hBiases[] - oBiases
         let nw = self.num_weights(self.n_input, self.n_output); // total num wts + biases
         if wts.len() != nw {
@@ -359,10 +330,7 @@ impl DeepNet {
         // 'xValues' might have class label or not
         // copy vals into iNodes
 
-        for i in 0..self.n_input {
-            // possible trunc
-            self.i_nodes[i] = x_values[i];
-        }
+        self.i_nodes[..self.n_input].copy_from_slice(&x_values[..self.n_input]);
 
         // zero-out all hNodes, oNodes
         for h in 0..self.n_layers {
@@ -418,40 +386,37 @@ impl DeepNet {
 
         let ret_result: Vec<f64> = DeepNet::soft_max(&self.o_nodes); // softmax activation all oNodes
 
-        for k in 0..self.n_output {
-            self.o_nodes[k] = ret_result[k];
-        }
-        //return ret_result; // calling convenience
+        self.o_nodes[..self.n_output].copy_from_slice(&ret_result[..self.n_output]);
         ret_result
     } // compute_outputs
 
     fn my_tanh(x: f64) -> f64 {
         if x < -20.0 {
-            return -1.0;
+            -1.0
         }
         // approximation is correct to 30 decimals
         else if x > 20.0 {
-            return 1.0;
+            1.0
         } else {
-            return x.tanh();
+            x.tanh()
         }
     }
 
-    fn soft_max(o_sums: &Vec<f64>) -> Vec<f64> {
+    fn soft_max(o_sums: &[f64]) -> Vec<f64> {
         // does all output nodes at once so scale
         // doesn't have to be re-computed each time.
         // possible overflow . . . use max trick
 
         let mut sum = 0.0;
-        for i in 0..o_sums.len() {
-            sum += o_sums[i].exp();
+        for item in o_sums.iter() {
+            sum += item.exp();
         }
         let mut result: Vec<f64> = vec![0.0; o_sums.len()];
 
         for i in 0..o_sums.len() {
             result[i] = o_sums[i].exp() / sum;
         }
-        return result; // now scaled so that xi sum to 1.0
+        result // now scaled so that xi sum to 1.0
     }
 
     fn show_vector(vector: &Vec<f64>, dec: usize) {
@@ -491,7 +456,7 @@ impl DeepNet {
                 num_wrong += 1.0;
             }
         }
-        return (num_correct * 1.0) / (num_correct + num_wrong);
+        (num_correct * 1.0) / (num_correct + num_wrong)
     }
 
     fn error(&mut self, data: &Vec<Vec<f64>>, verbose: bool) -> f64 {
@@ -521,7 +486,7 @@ impl DeepNet {
             }
         }
 
-        return sum_squared_error / ((data.len() * self.n_output) as f64); // average per item
+        sum_squared_error / ((data.len() * self.n_output) as f64) // average per item
     } // error
 
     fn train(
@@ -570,8 +535,8 @@ impl DeepNet {
 
         let mut sequence = vec![0; train_data.len()];
 
-        for i in 0..sequence.len() {
-            sequence[i] = i;
+        for (i, item) in sequence.iter_mut().enumerate() {
+            *item = i;
         }
 
         let err_interval = max_epochs / show_every; // interval to check & display  Error
@@ -596,9 +561,9 @@ impl DeepNet {
 
             DeepNet::shuffle(&mut sequence); // must visit each training data in random order in stochastic GD
 
-            for ii in 0..train_data.len() {
+            for item in sequence.iter().take(train_data.len()) {
                 // each train data item
-                let idx = sequence[ii]; // idx points to a data item
+                let idx = *item; // idx points to a data item
 
                 let x_values = Vec::from_iter(train_data[idx][0..self.n_input].iter().cloned()); // get x-values
                 let t_values = Vec::from_iter(
@@ -628,8 +593,8 @@ impl DeepNet {
                     let mut sum: f64 = 0.0; // need sums of output signals times hidden-to-output weights
                     let derivative =
                         (1.0 + self.h_nodes[last_layer][j]) * (1.0 - self.h_nodes[last_layer][j]); // for tanh!
-                    for k in 0..self.n_output {
-                        sum += o_signals[k] * self.ho_weights[j][k]; // represents error signal
+                    for (k, item) in o_signals.iter().enumerate().take(self.n_output) {
+                        sum += item * self.ho_weights[j][k]; // represents error signal
                     }
                     h_signals[last_layer][j] = derivative * sum;
                 }
@@ -654,9 +619,9 @@ impl DeepNet {
                 // calculate gradients left-to-right
 
                 // x. compute input-to-hidden weights gradients using iNodes & hSignal[0]
-                for i in 0..self.n_input {
-                    for j in 0..self.n_hidden[0] {
-                        ih_grads[i][j] = self.i_nodes[i] * h_signals[0][j]; // "from" input & "to" signal
+                for (i, item) in ih_grads.iter_mut().enumerate().take(self.n_input) {
+                    for (j, itm1) in item.iter_mut().enumerate().take(self.n_hidden[0]) {
+                        *itm1 = self.i_nodes[i] * h_signals[0][j]; // "from" input & "to" signal
                     }
                 }
 
@@ -673,16 +638,13 @@ impl DeepNet {
                 }
 
                 // x. compute hidden-to-output gradients
-                for j in 0..self.n_hidden[last_layer] {
-                    /* for (j, item) in ho_grads
-                        .iter_mut()
-                        .enumerate()
-                        .take(self.n_hidden[last_layer])
-                    {*/
-                    for k in 0..self.n_output {
-                        //for (k, elem) in o_signals.iter().enumerate().take(self.n_output) {
-                        ho_grads[j][k] = self.h_nodes[last_layer][j] * o_signals[k];
-                        //item[k] = self.h_nodes[last_layer][j] * *elem;
+                for (j, item) in ho_grads
+                    .iter_mut()
+                    .enumerate()
+                    .take(self.n_hidden[last_layer])
+                {
+                    for (k, elem) in o_signals.iter().enumerate().take(self.n_output) {
+                        item[k] = self.h_nodes[last_layer][j] * elem;
                         // from last hidden, to oSignals
                     }
                 }
