@@ -1,0 +1,2 @@
+*.cs linguist-detectable=true
+*.rs linguist-detectable=true
