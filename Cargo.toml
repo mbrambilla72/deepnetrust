@@ -1,16 +1,17 @@
 [package]
 name = "deepnetrust"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8"
+#rayon = "1.5.2"
+oorandom = "11.1.3"
 
 [profile.dev]
 # Turn on a small amount of optimisation in development mode.
-opt-level = 1
+#opt-level = 1
 
 [profile.release]
 lto = true
@@ -19,3 +20,10 @@ panic = "abort"
 codegen-units = 1
 debug = 1
 opt-level = 3
+
+[dev-dependencies]
+criterion = "0.3.5"
+
+[[bench]]
+name = "my_benchmark"
+harness = false
