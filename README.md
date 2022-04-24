@@ -1,17 +1,17 @@
 # deepnetrust
 
-An experimental port to rust from c# dnn code based on articles : 
+An experimental port to rust from c# dnn code based on articles : \
 
-https://visualstudiomagazine.com/articles/2015/04/01/back-propagation-using-c.aspx
+https://visualstudiomagazine.com/articles/2015/04/01/back-propagation-using-c.aspx \
 
-https://docs.microsoft.com/en-us/archive/msdn-magazine/2017/august/test-run-deep-neural-network-io-using-csharp
+https://docs.microsoft.com/en-us/archive/msdn-magazine/2017/august/test-run-deep-neural-network-io-using-csharp \
 
-versions
+versions \
 \
 0.1.0 \
 initial port \
 \
-0.1.1 
+0.1.1 \
 rand -> oorandom \
 add benchmark tanh \
 more costants for array use to see speedup \
