@@ -28,7 +28,7 @@ fn bench_my_tanh(n: u64) {
     // Optionally include some setup
     let x: f64 = 1.0001;
 
-    for i in 1..n {
+    for _i in 1..n {
         black_box(my_tanh(x));
     }
 }
@@ -37,7 +37,7 @@ fn bench_tanh_levien(n: u64) {
     // Optionally include some setup
     let x: f64 = 1.0001;
 
-    for i in 1..n {
+    for _i in 1..n {
         black_box(tanh_levien(x));
     }
 }
