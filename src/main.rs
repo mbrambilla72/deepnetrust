@@ -34,17 +34,14 @@ fn main() {
     println!("Setting learnRate = {:?} ", LEARN_RATE);
     println!("Setting momentumm = {:?} ", MOMENTUM);
     println!("\nStart training using back-prop with mean squared error \n");
-    //let _wts: Vec<f64> =
     dn.train(&train_data, MAX_EPOCHS, LEARN_RATE, MOMENTUM, 10); // show error every maxEpochs / 10
     println!("Training complete \n");
 
-    let train_error = dn.error(&train_data, false);
-    let train_acc = dn.accuracy(&train_data, false);
-    println!("Final model MS error = {:?} ", train_error);
-    println!("Final model accuracy = {:?} ", train_acc);
+    println!("Final model MS error = {:?} ", dn.error(&train_data));
+    println!("Final model accuracy = {:?} ", dn.accuracy(&train_data));
 
     println!("\nEnd demo ");
-    //Console.ReadLine();
+
     let duration = start.elapsed();
     println!("Time elapsed is: {:?}", duration);
 }
@@ -119,7 +116,8 @@ fn show_matrix(
 
 fn make_data() -> [[f64; NUM_INPUT + NUM_OUTPUT]; NUM_DATA_ITEMS] {
     let mut dn: DeepNet = DeepNet::new(); // make a DNN generator
-    let mut rrnd = oorandom::Rand64::new(5); // to make random weights & biases, random input vals
+    //let mut rrnd = oorandom::Rand64::new(5); // to make random weights & biases, random input vals
+    let mut rrnd = oorandom::Rand64::new(); // to make random weights & biases, random input vals
 
     let wt_lo: f64 = -9.0;
     let wt_hi: f64 = 9.0;
@@ -437,18 +435,18 @@ impl DeepNet {
         }
         result // now scaled so that xi sum to 1.0
     }
-
-    fn show_vector(vector: &[f64], dec: usize) {
-        vector.iter().for_each(|i| {
-            print!("{:.dec$}   ", i);
-        });
-        println!();
-    }
-
+    /*
+        fn show_vector(vector: &[f64], dec: usize) {
+            vector.iter().for_each(|i| {
+                print!("{:.dec$}   ", i);
+            });
+            println!();
+        }
+    */
     fn accuracy(
         &mut self,
         data: &[[f64; NUM_INPUT + NUM_OUTPUT]; NUM_DATA_ITEMS],
-        verbose: bool,
+        // verbose: bool,
     ) -> f64 {
         // percentage correct using winner-takes all
         let mut num_correct: f64 = 0.0;
@@ -458,14 +456,14 @@ impl DeepNet {
             let x_values = Vec::from_iter(i[0..NUM_INPUT].iter().cloned()); // get x-values
             let t_values = Vec::from_iter(i[NUM_INPUT..(NUM_INPUT + NUM_OUTPUT)].iter().cloned()); // get target values
             let y_values = self.compute_outputs(&x_values); // outputs using current weights
-
-            if verbose {
-                DeepNet::show_vector(&y_values, 4);
-                DeepNet::show_vector(&t_values, 4);
-                println!();
-                //Console.ReadLine();
-            }
-
+                                                            /*
+                                                                        if verbose {
+                                                                            DeepNet::show_vector(&y_values, 4);
+                                                                            DeepNet::show_vector(&t_values, 4);
+                                                                            println!();
+                                                                            //Console.ReadLine();
+                                                                        }
+                                                            */
             let max_index0: usize = max_index(&y_values); // which cell in yValues has largest value?
             let t_max_index: usize = max_index(&t_values);
 
@@ -481,7 +479,7 @@ impl DeepNet {
     fn error(
         &mut self,
         data: &[[f64; NUM_INPUT + NUM_OUTPUT]; NUM_DATA_ITEMS],
-        verbose: bool,
+        // verbose: bool,
     ) -> f64 {
         // mean squared error using current weights & biases
         let mut sum_squared_error = 0.0;
@@ -491,14 +489,14 @@ impl DeepNet {
             let x_values = Vec::from_iter(i[0..NUM_INPUT].iter().cloned());
             let t_values = Vec::from_iter(i[NUM_INPUT..(NUM_INPUT + NUM_OUTPUT)].iter().cloned()); // get target values
             let y_values = self.compute_outputs(&x_values); // outputs using current weights
-
-            if verbose {
-                DeepNet::show_vector(&y_values, 4);
-                DeepNet::show_vector(&t_values, 4);
-                println!();
-                //Console.ReadLine();
-            }
-
+                                                            /*
+                                                                        if verbose {
+                                                                            DeepNet::show_vector(&y_values, 4);
+                                                                            DeepNet::show_vector(&t_values, 4);
+                                                                            println!();
+                                                                            //Console.ReadLine();
+                                                                        }
+                                                            */
             (0..NUM_OUTPUT).for_each(|j| {
                 let err = t_values[j] - y_values[j];
                 sum_squared_error += err * err;
@@ -561,10 +559,13 @@ impl DeepNet {
             if epoch % err_interval == 0 && epoch < max_epochs
             // display curr MSE
             {
-                let train_err = self.error(train_data, false); // using curr weights & biases
-                let train_acc = self.accuracy(train_data, false);
-                print!("epoch = {:?}  MS error = {:.4} ", epoch, train_err);
-                println!("  accuracy = {:.4} ", train_acc);
+                // using curr weights & biases
+                print!(
+                    "epoch = {:?}  MS error = {:.4} ",
+                    epoch,
+                    self.error(train_data)
+                );
+                println!("  accuracy = {:.4} ", self.accuracy(train_data));
                 println!(
                     "input-to-hidden [0][0] gradient = {:.12}",
                     self.ih_gradient00
