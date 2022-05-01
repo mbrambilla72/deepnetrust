@@ -1,5 +1,5 @@
 //use rayon::prelude::*;
-//use oorandom;
+use oorandom;
 use std::time::Instant;
 
 const NUM_INPUT: usize = 4;
