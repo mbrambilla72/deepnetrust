@@ -116,8 +116,7 @@ fn show_matrix(
 
 fn make_data() -> [[f64; NUM_INPUT + NUM_OUTPUT]; NUM_DATA_ITEMS] {
     let mut dn: DeepNet = DeepNet::new(); // make a DNN generator
-    //let mut rrnd = oorandom::Rand64::new(5); // to make random weights & biases, random input vals
-    let mut rrnd = oorandom::Rand64::new(); // to make random weights & biases, random input vals
+    let mut rrnd = oorandom::Rand64::new(5); // to make random weights & biases, random input vals
 
     let wt_lo: f64 = -9.0;
     let wt_hi: f64 = 9.0;
